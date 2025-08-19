@@ -25,7 +25,7 @@ const TicTacToe = () => {
   useEffect(() => {
   }, [box])
   return (
-    <div className="bg-black w-12/12 h-svh flex flex-col justify-center items-center">
+    <div className="bg-black w-12/12 h-svh flex flex-col gap-5 justify-center items-center">
       <div className="text-gray-500 text-4xl py-5 font-extrabold">{isStarted ? "Game Started!!" : "Start Game!"}</div>
       <div className="w-3/12 h-3/6  flex-wrap flex bg-white">
         {ticTaxBox.map((_, index) => (
