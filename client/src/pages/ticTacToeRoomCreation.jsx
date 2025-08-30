@@ -1,11 +1,27 @@
-import { Button, Container, Clipboard, IconButton, Input, InputGroup, Text, Link, Stack } from "@chakra-ui/react"
+import { Button, Container, Clipboard, IconButton, Input, InputGroup, Text, Link } from "@chakra-ui/react"
 import { useEffect, useState } from "react";
 import { VscDebugRestart } from "react-icons/vsc";
+import JoinedPlayers from "./joinedPlayers";
+import { io } from "socket.io-client"
+const socket = io("http://localhost:8080")
 
 
 export const TicTacToeRoomCreation = () => {
     const [regenratedId, setRegenratedId] = useState(0)
     const [loader, setLoader] = useState(false)
+    const [joinedPlayers, setJoinedPlayers] = useState(
+        [
+            {
+                name: "You Joined"
+            }
+        ]
+    )
+
+    socket.on("connect", () => {
+        console.log("Connected with ID:", socket.id)
+    })
+
+
     const generateRandomId = () => {
         let randomNumber = Math.floor(10000 + Math.random() * 90000);
         setRegenratedId(randomNumber)
@@ -32,9 +48,12 @@ export const TicTacToeRoomCreation = () => {
                     </Clipboard.Input>
                 </InputGroup>
             </Clipboard.Root>
-            <Button loading={loader} onClick={createTheGame} loadingText={loader ? "Waiting for users..." : "Created"}>
+            <Button loading={loader} onClick={createTheGame} loadingText={loader ? "Opponent joining..." : "Created"}>
                 Create Game-ID
             </Button>
+            {
+                loader && <JoinedPlayers joinedPlayers={joinedPlayers} />
+            }
         </Container >
     )
 }
