@@ -2,9 +2,10 @@ import { Button, Container, Clipboard, IconButton, Input, InputGroup, Text, Link
 import { useEffect, useState } from "react";
 import { VscDebugRestart } from "react-icons/vsc";
 import JoinedPlayers from "./joinedPlayers";
-import { io } from "socket.io-client"
-const socket = io("http://localhost:8080")
+import { io } from "socket.io-client";
 
+
+const socket = io("http://localhost:8080/")
 
 export const TicTacToeRoomCreation = () => {
     const [regenratedId, setRegenratedId] = useState(0)
@@ -17,21 +18,22 @@ export const TicTacToeRoomCreation = () => {
         ]
     )
 
-    socket.on("connect", () => {
-        console.log("Connected with ID:", socket.id)
-    })
-
+    useEffect(() => {
+        socket.on("connect", () => {
+            console.log("✅ Connected to server with ID:", socket.id);
+        });
+        socket.emit("gameJoin", "hey bro")
+        generateRandomId()
+    }, [])
 
     const generateRandomId = () => {
         let randomNumber = Math.floor(10000 + Math.random() * 90000);
         setRegenratedId(randomNumber)
     }
+
     const createTheGame = () => {
         setLoader(true)
     }
-    useEffect(() => {
-        generateRandomId()
-    }, [])
     return (
         <Container height={"100vh"} p={"4"} display={"flex"} flexDirection={"column"} gap={"9"} >
             <Text p={"4"} rounded={"xl"} textAlign={"center"} textStyle={"2xl"} fontWeight={"700"} border={"1px dotted grey"} >Tic Tac Toe</Text>
