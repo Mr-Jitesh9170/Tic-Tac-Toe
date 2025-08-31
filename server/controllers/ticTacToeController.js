@@ -1,8 +1,7 @@
 exports.ticTackToeSocket = (io) => {
     io.on("connection", (socket) => {
-        console.log("socket connected!", socket.id)
-        socket.on("gameJoin", async (gameId) => {
-            socket.join(gameId);
+        socket.on("gameJoin", async ({ userId, regenratedId }) => {
+
         })
 
         socket.on("gameLeave", (roomNumber) => {

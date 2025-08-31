@@ -5,7 +5,9 @@ import JoinedPlayers from "./joinedPlayers";
 import { io } from "socket.io-client";
 
 
-const socket = io("http://localhost:8080/")
+const socket = io("http://localhost:8080")
+const today = new Date()
+const userId = `userId${today.getFullYear() + today.getMilliseconds() + today.getSeconds()}`
 
 export const TicTacToeRoomCreation = () => {
     const [regenratedId, setRegenratedId] = useState(0)
@@ -13,7 +15,8 @@ export const TicTacToeRoomCreation = () => {
     const [joinedPlayers, setJoinedPlayers] = useState(
         [
             {
-                name: "You Joined"
+                name: "",
+                roomId: ""
             }
         ]
     )
@@ -22,8 +25,13 @@ export const TicTacToeRoomCreation = () => {
         socket.on("connect", () => {
             console.log("✅ Connected to server with ID:", socket.id);
         });
-        socket.emit("gameJoin", "hey bro")
+        socket.on("gameJoin", ({ userId, regenratedId }) => {
+            setJoinedPlayers((prev) => { [...prev, { name: `${userId}`, roomId: `${regenratedId}` }] })
+        })
         generateRandomId()
+        return () => {
+            socket.off()
+        }
     }, [])
 
     const generateRandomId = () => {
@@ -32,6 +40,7 @@ export const TicTacToeRoomCreation = () => {
     }
 
     const createTheGame = () => {
+        socket.emit("gameJoin", { userId, regenratedId })
         setLoader(true)
     }
     return (

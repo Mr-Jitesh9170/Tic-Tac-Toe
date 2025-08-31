@@ -15,29 +15,11 @@ app.get("/", (req, res) => {
 let io = new Server(server, {
     cors: {
         origin: "http://localhost:5173",
-    }
+    },
 });
-
-io.on("connection", (socket) => {
-    console.log("socket connected!", socket.id)
-    socket.on("gameJoin", async (gameId) => {
-        socket.join(gameId);
-    })
-
-    socket.on("gameLeave", (roomNumber) => {
-        socket.leave(roomNumber);
-    })
-    socket.on("disconnect", async () => {
-        console.log("socket disconnect!")
-    });
-});
-
-
-
-
-
-// ticTackToeSocket(io)
+ 
+ticTackToeSocket(io)
 const port = 8080 || process.env.PORT
-app.listen(port, () => {
+server.listen(port, () => {
     console.log("Server is running at -> ", port)
 })
