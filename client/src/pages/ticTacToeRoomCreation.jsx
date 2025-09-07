@@ -18,7 +18,7 @@ export const TicTacToeRoomCreation = () => {
     const [inputs, setIputs] = useState(
         {
             isInput: true,
-            inputData: "",
+            inputData: 0,
             isJoining: false
         }
     )
@@ -27,15 +27,16 @@ export const TicTacToeRoomCreation = () => {
             console.log("✅ Connected to server with ID:", socket.id);
         });
         socket.on("joinedPlayesLists", ({ userId, gameRoomId }) => {
-            console.log({ userId, gameRoomId },"<------- data")
+            console.log({ userId, gameRoomId }, "<------- data")
             setJoinedPlayers((prev) => ([...prev, { name: `${userId == YourId ? "(You)" : "(He)"} ${userId}  Joined`, roomId: `${gameRoomId}` }]))
         })
-        generateRandomId() 
+        generateRandomId()
     }, [])
+    
     // input change 
     const inputChange = (e) => {
         let { value } = e.target
-        setIputs({ ...inputs, inputData: value })
+        setIputs({ ...inputs, inputData: parseInt(value) })
     }
     // join game
     const joinTheGame = () => {
