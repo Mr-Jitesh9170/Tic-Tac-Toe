@@ -3,10 +3,8 @@ import { useEffect, useState } from "react";
 import { VscDebugRestart } from "react-icons/vsc";
 import { FaRestroom } from "react-icons/fa6";
 import { MdOutlineAdsClick } from "react-icons/md";
-
 import JoinedPlayers from "./joinedPlayers";
 import { io } from "socket.io-client";
-
 const socket = io("http://localhost:8080")
 const today = new Date()
 const YourId = `userId${today.getFullYear() + today.getMilliseconds() + today.getSeconds()}`
@@ -19,20 +17,25 @@ export const TicTacToeRoomCreation = () => {
         {
             isInput: true,
             inputData: 0,
-            isJoining: false
+            isJoining: false,
+            isGameStart: false
         }
     )
     useEffect(() => {
-        socket.on("connect", () => {
-            console.log("✅ Connected to server with ID:", socket.id);
-        });
-        socket.on("joinedPlayesLists", ({ userId, gameRoomId }) => {
-            console.log({ userId, gameRoomId }, "<------- data")
-            setJoinedPlayers((prev) => ([...prev, { name: `${userId == YourId ? "(You)" : "(He)"} ${userId}  Joined`, roomId: `${gameRoomId}` }]))
+        socket.on("joinedPlayesLists", (joinedPlayers) => {
+            setJoinedPlayers((prev) => ([...prev, joinedPlayers]))
         })
         generateRandomId()
+        return () => {
+        }
     }, [])
-    
+    useEffect(() => {
+        if (joinedPlayers.length == 2) {
+            setIputs({ ...inputs, isInput: false, isGameStart: true })
+            socket.emit("joinedPlayesLists", { userId: YourId, gameRoomId: inputs.inputData })
+        }
+    }, [joinedPlayers])
+
     // input change 
     const inputChange = (e) => {
         let { value } = e.target
@@ -42,6 +45,8 @@ export const TicTacToeRoomCreation = () => {
     const joinTheGame = () => {
         socket.emit("gameJoin", { gameRoomId: inputs.inputData })
         socket.emit("joinedPlayesLists", { userId: YourId, gameRoomId: inputs.inputData })
+        setIputs({ ...inputs, isJoining: false, isGameStart: true })
+        setLoader(true)
     }
     // enter the game id
     const enterIdHandler = () => {
@@ -66,37 +71,38 @@ export const TicTacToeRoomCreation = () => {
         <Container height={"100vh"} p={"4"} display={"flex"} flexDirection={"column"} gap={"9"} >
             <Text p={"4"} rounded={"xl"} textAlign={"center"} textStyle={"2xl"} fontWeight={"700"} border={"1px dotted grey"} >Tic Tac Toe</Text>
             {
-                inputs.isInput
-                    ?
-                    (
-                        <Clipboard.Root value={regenratedId} display={"flex"} flexDirection={"column"}>
-                            <Clipboard.Label textStyle="label" alignSelf={"flex-end"}>
-                                <Link href="#" onClick={generateRandomId} color={"blue"}>
-                                    RegenerateId
-                                    < VscDebugRestart />
-                                </Link>
-                            </Clipboard.Label>
-                            <InputGroup startAddon="🎮" endElement={<ClipboardIconButton />} >
-                                <Clipboard.Input asChild>
-                                    <Input p={"4"} fontSize={"3xl"} />
-                                </Clipboard.Input>
-                            </InputGroup>
-                            <Clipboard.Label textStyle="label" alignSelf={"flex-end"}>
-                                <Link href="#" onClick={enterIdHandler} color={"red"}>
-                                    Enter Game-id
-                                    <MdOutlineAdsClick />
-                                </Link>
-                            </Clipboard.Label>
-                        </Clipboard.Root>
-                    )
-                    :
+                inputs.isInput &&
+                <Clipboard.Root value={regenratedId} display={"flex"} flexDirection={"column"}>
+                    <Clipboard.Label textStyle="label" alignSelf={"flex-end"}>
+                        <Link href="#" onClick={generateRandomId} color={"blue"}>
+                            RegenerateId
+                            < VscDebugRestart />
+                        </Link>
+                    </Clipboard.Label>
+                    <InputGroup startAddon="🎮" endElement={<ClipboardIconButton />} >
+                        <Clipboard.Input asChild>
+                            <Input p={"4"} fontSize={"3xl"} />
+                        </Clipboard.Input>
+                    </InputGroup>
+                    <Clipboard.Label textStyle="label" alignSelf={"flex-end"}>
+                        <Link href="#" onClick={enterIdHandler} color={"red"}>
+                            Enter Game-id
+                            <MdOutlineAdsClick />
+                        </Link>
+                    </Clipboard.Label>
+                </Clipboard.Root>
+            }
+            {
+                inputs.isJoining && (
                     <InputGroup startElement={<FaRestroom />}>
                         <Input onChange={inputChange} placeholder="Please enter your Game ID..." />
                     </InputGroup>
+                )
             }
             {inputs.isInput && <Button loading={loader} onClick={createTheGame} loadingText={loader ? "Opponent waiting..." : "Created"}>Create Game-ID</Button>}
+            {inputs.isGameStart && <Button >Start Game</Button>}
             {inputs.isJoining && <Button loading={loader} onClick={joinTheGame} loadingText={loader ?? "Joining..."}>Join Game</Button>}
-            {loader && <JoinedPlayers joinedPlayers={joinedPlayers} />}
+            {loader && <JoinedPlayers joinedPlayers={joinedPlayers} isGameStart={inputs.isGameStart} />}
         </Container >
     )
 }
